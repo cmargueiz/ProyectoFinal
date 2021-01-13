@@ -24,7 +24,6 @@ public class ProyectoFinal {
             String linea = "";
             int cont = 0;
             while (linea != null) {
-
                 linea = buffer.readLine();
                 if (linea != null) {
                     libros[cont] = linea;
@@ -40,9 +39,9 @@ public class ProyectoFinal {
         return libros;
     }
 
-    public void escribir(String reservas, String libroReservado) {
+    public void escribir(String reservas, String libroReservado, boolean sobreEscritura) {
         try {
-            FileWriter escritura = new FileWriter(reservas, true);
+            FileWriter escritura = new FileWriter(reservas, sobreEscritura);
 
             for (int i = 0; i < libroReservado.length(); i++) {
                 escritura.write(libroReservado.charAt(i));
@@ -63,6 +62,12 @@ public class ProyectoFinal {
         String[] librosExistentes = app.leerArchivo(RUTA_LIBROS);
         String[] librosReservados = app.leerArchivo(RUTA_LIBROS_RESERVADOS);
         String[] carnetValidos = app.leerArchivo(RUTA_CARNET);
+        String salida = "";
+        String libroSolicitado;
+        String libroDevuelto;
+        boolean estadoReservado = false, libroExistente = false;//False cuando no esta reservado y true cuando esta reservado
+        boolean estadoDevuelto;
+        int numeroLibroReservados = 0;
         JTextArea hoja = new JTextArea();
         int opcion = 1;//Inicializado en 1 para ingresar al bucle
         String carneIngreso;
@@ -70,10 +75,7 @@ public class ProyectoFinal {
 
         do {
             carneIngreso = JOptionPane.showInputDialog("Ingrese su carnet de estudiante para ingresar al sistema bibliotecario").toUpperCase();
-            if (!carneConfirmado) {
-                JOptionPane.showMessageDialog(hoja, "Ingrese un carnet valido");
-                carneConfirmado = false;
-            }
+
             for (int iterador = 0; iterador < carnetValidos.length; iterador++) {
                 if (carnetValidos[iterador] != null) {
                     if (carneIngreso.endsWith(carnetValidos[iterador])) {
@@ -83,17 +85,20 @@ public class ProyectoFinal {
 
             }
 
+            if (!carneConfirmado) {
+                JOptionPane.showMessageDialog(hoja, "Ingrese un carnet valido");
+                carneConfirmado = false;
+            }
+
         } while (carneIngreso.equals("") || carneConfirmado == false);
 
-        while (opcion > 0 && opcion < 4) {
-            do {
-                opcion = Integer.parseInt(JOptionPane.showInputDialog("Menu:\n1.Ver libros Existentes\n2. Reservar libro\n3.Ver libros prestados\n4.Devolver libros.\n5. Salir"));
-            } while (opcion < 0 || opcion > 4);
+        while (opcion > 0 && opcion < 5) {
+
+            opcion = Integer.parseInt(JOptionPane.showInputDialog("Menu:\n1.Ver libros Existentes\n2. Reservar libro\n3.Ver libros prestados\n4.Devolver libros.\n5. Salir"));
 
             switch (opcion) {
                 case 1:
                     //Bloque para ver libros
-                    String salida = "";
 
                     for (int iterador = 0; iterador < librosExistentes.length; iterador++) {
                         if (librosExistentes[iterador] != null) {
@@ -107,9 +112,8 @@ public class ProyectoFinal {
                     break;
                 case 2:
                     //bloque para prestar libro
-                    String libroSolicitado = JOptionPane.showInputDialog("Ingrese el nombre del libro que desea reservar:").toUpperCase();
-                    boolean estadoReservado = false, libroExistente = false;//False cuando no esta reservado y true cuando esta reservado
-                    int numeroLibroReservados = 0;
+                    libroSolicitado = JOptionPane.showInputDialog("Ingrese el nombre del libro que desea reservar:").toUpperCase();
+
                     for (int iterador = 0; iterador < librosReservados.length; iterador++) {
                         if (librosReservados[iterador] != null) {
                             if (libroSolicitado.equals(librosReservados[iterador])) {
@@ -132,7 +136,7 @@ public class ProyectoFinal {
                         if (libroExistente) {
                             //librosReservados[numeroLibroReservados] = libroSolicitado;
 
-                            app.escribir(RUTA_LIBROS_RESERVADOS, libroSolicitado + "\n");
+                            app.escribir(RUTA_LIBROS_RESERVADOS, libroSolicitado + "\n", true);
                             JOptionPane.showMessageDialog(null, "Libros reservado satisfactoriamente");
                         } else {
                             JOptionPane.showMessageDialog(null, "Lo lamentos, libro no existente");
@@ -159,33 +163,33 @@ public class ProyectoFinal {
                 case 4:
 
                     //Bloque para devolver libro
-                    String libroDevuelto = JOptionPane.showInputDialog("Ingrese el codigo del libro devuelve");
-                    boolean estadoDevuelto = false;//False cuando no esta reservado y true cuando esta reservado
-
+                    libroDevuelto = JOptionPane.showInputDialog("Ingrese el codigo del libro devuelve").toUpperCase();
+                    estadoDevuelto = false;//False cuando no esta reservado y true cuando esta reservado
+                    int numeroLibrosReservados = 0;
                     for (int iterador = 0; iterador < librosReservados.length; iterador++) {
                         if (librosReservados[iterador] != null) {
                             if (libroDevuelto.equals(librosReservados[iterador])) {
                                 estadoDevuelto = true;
+                                numeroLibrosReservados++;
                             }
+
                         }
                     }
                     if (estadoDevuelto) {
-
-                        String[] temp = librosReservados;
+                        if (numeroLibrosReservados == 1) {
+                            app.escribir(RUTA_LIBROS_RESERVADOS, "", false);
+                        }
 
                         for (int iterador = 0; iterador < librosReservados.length; iterador++) {
                             if (librosReservados[iterador] != null) {
                                 if (!librosReservados[iterador].equals(libroDevuelto)) {
-                                    temp[iterador] = librosReservados[iterador];
+                                    System.out.println(librosReservados[iterador]);
+                                    app.escribir(RUTA_LIBROS_RESERVADOS, librosReservados[iterador] + "\n", false);
                                 }
+
                             }
                         }
 
-                        librosReservados = temp;
-
-                        for (int iterador = 0; iterador < librosReservados.length; iterador++) {
-                            app.escribir(librosReservados[iterador], RUTA_LIBROS_RESERVADOS);
-                        }
                     } else {
                         JOptionPane.showMessageDialog(null, "Este libro no ha sido reservado");
                     }
