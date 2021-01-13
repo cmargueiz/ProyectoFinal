@@ -1,12 +1,13 @@
 package ProyectoFinal;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -39,29 +40,6 @@ public class ProyectoFinal {
         return libros;
     }
 
-    public String[] leer(String reservas) {
-        String[] letras = new String[1000];
-        try {
-            FileReader entrada = new FileReader(reservas);
-            int c = 0, cont = 0;
-            String cadena = "";
-            while (c != -1) {
-                c = entrada.read();
-                char letra = (char) c;
-                if (c != -1) {
-                    letras[cont] = Character.toString(letra);
-                    cont++;
-                }
-            }
-            entrada.close();
-
-        } catch (IOException ex) {
-            System.out.println("No se ha encontrado el archivo");
-            Logger.getLogger(ProyectoFinal.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return letras;
-    }
-
     public void escribir(String reservas, String libroReservado) {
         try {
             FileWriter escritura = new FileWriter(reservas, true);
@@ -80,20 +58,139 @@ public class ProyectoFinal {
     public static void main(String[] args) {
         final String RUTA_LIBROS = "/home/melissaherrera/NetBeansProjects/JavaApplication1/src/ProyectoFinal/Libros.txt";
         final String RUTA_LIBROS_RESERVADOS = "/home/melissaherrera/NetBeansProjects/JavaApplication1/src/ProyectoFinal/Reservados.txt";
+        final String RUTA_CARNET = "/home/melissaherrera/NetBeansProjects/JavaApplication1/src/ProyectoFinal/ListaCanet.txt";
         ProyectoFinal app = new ProyectoFinal();
-        String[] letras = app.leerArchivo(RUTA_LIBROS);
-        for (int i = 0; i < letras.length; i++) {
-            if (letras[i] != null) {
-                System.out.println(letras[i]);
+        String[] librosExistentes = app.leerArchivo(RUTA_LIBROS);
+        String[] librosReservados = app.leerArchivo(RUTA_LIBROS_RESERVADOS);
+        String[] carnetValidos = app.leerArchivo(RUTA_CARNET);
+        JTextArea hoja = new JTextArea();
+        int opcion = 1;//Inicializado en 1 para ingresar al bucle
+        String carneIngreso;
+        boolean carneConfirmado = false;
+
+        do {
+            carneIngreso = JOptionPane.showInputDialog("Ingrese su carnet de estudiante para ingresar al sistema bibliotecario").toUpperCase();
+            if (!carneConfirmado) {
+                JOptionPane.showMessageDialog(hoja, "Ingrese un carnet valido");
+                carneConfirmado = false;
+            }
+            for (int iterador = 0; iterador < carnetValidos.length; iterador++) {
+                if (carnetValidos[iterador] != null) {
+                    if (carneIngreso.endsWith(carnetValidos[iterador])) {
+                        carneConfirmado = true;
+                    }
+                }
+
             }
 
-        }
+        } while (carneIngreso.equals("") || carneConfirmado == false);
 
-        app.escribir(RUTA_LIBROS_RESERVADOS, "\n50");
-        String[] reservas = app.leerArchivo(RUTA_LIBROS_RESERVADOS);
-        for (int i = 0; i < reservas.length; i++) {
-            if (reservas[i] != null) {
-                System.out.println(reservas[i]);
+        while (opcion > 0 && opcion < 4) {
+            do {
+                opcion = Integer.parseInt(JOptionPane.showInputDialog("Menu:\n1.Ver libros Existentes\n2. Reservar libro\n3.Ver libros prestados\n4.Devolver libros.\n5. Salir"));
+            } while (opcion < 0 || opcion > 4);
+
+            switch (opcion) {
+                case 1:
+                    //Bloque para ver libros
+                    String salida = "";
+
+                    for (int iterador = 0; iterador < librosExistentes.length; iterador++) {
+                        if (librosExistentes[iterador] != null) {
+                            salida += librosExistentes[iterador] + "\n";
+
+                        }
+                    }
+                    hoja.setText(salida);
+                    JOptionPane.showMessageDialog(null, hoja);
+
+                    break;
+                case 2:
+                    //bloque para prestar libro
+                    String libroSolicitado = JOptionPane.showInputDialog("Ingrese el nombre del libro que desea reservar:").toUpperCase();
+                    boolean estadoReservado = false, libroExistente = false;//False cuando no esta reservado y true cuando esta reservado
+                    int numeroLibroReservados = 0;
+                    for (int iterador = 0; iterador < librosReservados.length; iterador++) {
+                        if (librosReservados[iterador] != null) {
+                            if (libroSolicitado.equals(librosReservados[iterador])) {
+                                estadoReservado = true;
+                            }
+                            numeroLibroReservados++;
+                        }
+
+                    }
+                    if (!estadoReservado) {
+                        for (int iterador = 0; iterador < librosExistentes.length; iterador++) {
+                            if (librosExistentes[iterador] != null) {
+                                if (libroSolicitado.equals(librosExistentes[iterador].toUpperCase())) {
+                                    libroExistente = true;
+                                }
+
+                            }
+                        }
+
+                        if (libroExistente) {
+                            //librosReservados[numeroLibroReservados] = libroSolicitado;
+
+                            app.escribir(RUTA_LIBROS_RESERVADOS, libroSolicitado + "\n");
+                            JOptionPane.showMessageDialog(null, "Libros reservado satisfactoriamente");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Lo lamentos, libro no existente");
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Lo lamentamos este libro ya ha sido reservado");
+                    }
+
+                    break;
+                case 3:
+                    //bloque para ver libros que han sido reservados
+                    salida = "";
+                    librosReservados = app.leerArchivo(RUTA_LIBROS_RESERVADOS);
+                    for (int iterador = 0; iterador < librosReservados.length; iterador++) {
+                        if (librosReservados[iterador] != null) {
+                            salida += librosReservados[iterador] + "\n";
+                        }
+                    }
+
+                    hoja.setText(salida);
+                    JOptionPane.showMessageDialog(null, hoja);
+
+                    break;
+                case 4:
+
+                    //Bloque para devolver libro
+                    String libroDevuelto = JOptionPane.showInputDialog("Ingrese el codigo del libro devuelve");
+                    boolean estadoDevuelto = false;//False cuando no esta reservado y true cuando esta reservado
+
+                    for (int iterador = 0; iterador < librosReservados.length; iterador++) {
+                        if (librosReservados[iterador] != null) {
+                            if (libroDevuelto.equals(librosReservados[iterador])) {
+                                estadoDevuelto = true;
+                            }
+                        }
+                    }
+                    if (estadoDevuelto) {
+
+                        String[] temp = librosReservados;
+
+                        for (int iterador = 0; iterador < librosReservados.length; iterador++) {
+                            if (librosReservados[iterador] != null) {
+                                if (!librosReservados[iterador].equals(libroDevuelto)) {
+                                    temp[iterador] = librosReservados[iterador];
+                                }
+                            }
+                        }
+
+                        librosReservados = temp;
+
+                        for (int iterador = 0; iterador < librosReservados.length; iterador++) {
+                            app.escribir(librosReservados[iterador], RUTA_LIBROS_RESERVADOS);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Este libro no ha sido reservado");
+                    }
+                    break;
+
             }
 
         }
