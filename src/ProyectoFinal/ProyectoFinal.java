@@ -67,7 +67,7 @@ public class ProyectoFinal {
         String libroDevuelto;
         boolean estadoReservado = false, libroExistente = false;//False cuando no esta reservado y true cuando esta reservado
         boolean estadoDevuelto;
-        int numeroLibroReservados = 0;
+        int numeroLibrosReservados = 0;
         JTextArea hoja = new JTextArea();
         int opcion = 1;//Inicializado en 1 para ingresar al bucle
         String carneIngreso;
@@ -119,7 +119,7 @@ public class ProyectoFinal {
                             if (libroSolicitado.equals(librosReservados[iterador])) {
                                 estadoReservado = true;
                             }
-                            numeroLibroReservados++;
+                            
                         }
 
                     }
@@ -134,7 +134,7 @@ public class ProyectoFinal {
                         }
 
                         if (libroExistente) {
-                            //librosReservados[numeroLibroReservados] = libroSolicitado;
+                            
 
                             app.escribir(RUTA_LIBROS_RESERVADOS, libroSolicitado + "\n", true);
                             JOptionPane.showMessageDialog(null, "Libros reservado satisfactoriamente");
@@ -158,14 +158,13 @@ public class ProyectoFinal {
 
                     hoja.setText(salida);
                     JOptionPane.showMessageDialog(null, hoja);
-
                     break;
                 case 4:
 
                     //Bloque para devolver libro
                     libroDevuelto = JOptionPane.showInputDialog("Ingrese el codigo del libro devuelve").toUpperCase();
                     estadoDevuelto = false;//False cuando no esta reservado y true cuando esta reservado
-                    int numeroLibrosReservados = 0;
+                    numeroLibrosReservados = 0;
                     for (int iterador = 0; iterador < librosReservados.length; iterador++) {
                         if (librosReservados[iterador] != null) {
                             if (libroDevuelto.equals(librosReservados[iterador])) {
@@ -177,7 +176,7 @@ public class ProyectoFinal {
                     }
                     if (estadoDevuelto) {
                         if (numeroLibrosReservados == 1) {
-                            app.escribir(RUTA_LIBROS_RESERVADOS, "", false);
+                            app.escribir(RUTA_LIBROS_RESERVADOS,"", false);
                         }
 
                         for (int iterador = 0; iterador < librosReservados.length; iterador++) {
